@@ -54,8 +54,8 @@ def convert_to(features, labels, name, mult=1):
   writer = tf.python_io.TFRecordWriter(filename)
   features_reader = features.readData(1)
   labels_reader = labels.readData(1)
-  # for _ in range(num_to_convert):
-  for _ in range(5120):
+  for _ in range(num_to_convert):
+  # for _ in range(5120):
     feature_vector = features_reader.next()
     label = labels_reader.next()
     feature_vector_raw = feature_vector.astype('float32').tostring()

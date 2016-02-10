@@ -36,9 +36,9 @@ FLAGS = flags.FLAGS
 if len(FLAGS.__flags) == 0:
   flags.DEFINE_float('learning_rate', 0.08, 'Initial learning rate.')
   flags.DEFINE_integer('num_epochs', 25, 'Number of epochs to run trainer.')
-  flags.DEFINE_integer('hidden1', 1024, 'Number of units in hidden layer 1.')
-  flags.DEFINE_integer('hidden2', 1024, 'Number of units in hidden layer 2.')
-  flags.DEFINE_integer('hidden3', 1024, 'Number of units in hidden layer 3.')
+  flags.DEFINE_integer('hidden1', 1000, 'Number of units in hidden layer 1.')
+  flags.DEFINE_integer('hidden2', 1000, 'Number of units in hidden layer 2.')
+  flags.DEFINE_integer('hidden3', 1000, 'Number of units in hidden layer 3.')
   flags.DEFINE_integer('batch_size', 1024, 'Batch size.')
   flags.DEFINE_string('train_dir', '.',
                         'Directory with the training data.')
@@ -50,10 +50,10 @@ os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
 # Constants used for dealing with the files, matches convert_to_records.
 TRAIN_FILE = 'train_6457344.tfrecords'
 VALIDATION_FILE = 'dev_498688.tfrecords'
-# VALIDATION_FILE = 'dev_2012928.tfrecords'
+VALIDATION_FILE = 'dev_2012928.tfrecords'
 FEATURE_DIMENSIONALITY = 440
 NUM_VAL_SAMPLES = 498688
-# NUM_VAL_SAMPLES = 2012928
+NUM_VAL_SAMPLES = 2012928
 NUM_TRAIN_SAMPLES = 6457344
 VAL_BATCH_SIZE = 256
 
@@ -215,7 +215,7 @@ def run_training():
           print('Step %d: loss = %.2f (%.3f sec), fac = %.2f' % 
               (step, loss_value, duration, fac_value / FLAGS.batch_size))
         if step % int(NUM_TRAIN_SAMPLES / FLAGS.batch_size) == 0:
-          saver.save(sess, FLAGS.train_dir + '/cnnmodel', global_step=step)
+          saver.save(sess, FLAGS.train_dir + '/fc3_model_fbank', global_step=step)
           it_loss = it_fac = 0
           print('Validating...')
           for i in range(val_batches):

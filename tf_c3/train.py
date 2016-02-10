@@ -36,10 +36,10 @@ FLAGS = flags.FLAGS
 if len(FLAGS.__flags) == 0:
   flags.DEFINE_float('learning_rate', 0.08, 'Initial learning rate.')
   flags.DEFINE_integer('num_epochs', 25, 'Number of epochs to run trainer.')
-  flags.DEFINE_integer('hidden1', 1000, 'Number of units in hidden layer 1.')
-  flags.DEFINE_integer('hidden2', 1000, 'Number of units in hidden layer 2.')
-  flags.DEFINE_integer('hidden3', 1000, 'Number of units in hidden layer 3.')
-  flags.DEFINE_integer('batch_size', 1024, 'Batch size.')
+  flags.DEFINE_integer('hidden1', 1024, 'Number of units in hidden layer 1.')
+  flags.DEFINE_integer('hidden2', 1024, 'Number of units in hidden layer 2.')
+  flags.DEFINE_integer('hidden3', 1024, 'Number of units in hidden layer 3.')
+  flags.DEFINE_integer('batch_size', 256, 'Batch size.')
   flags.DEFINE_string('train_dir', '.',
                         'Directory with the training data.')
   flags.DEFINE_string('gpu', '0',
@@ -54,7 +54,8 @@ FEATURE_DIMENSIONALITY = 440
 NUM_VAL_SAMPLES = 498688
 NUM_TRAIN_SAMPLES = 6457344
 VAL_BATCH_SIZE = 256
-
+TRAIN_FILE = VALIDATION_FILE
+NUM_TRAIN_SAMPLES = NUM_VAL_SAMPLES
 # TRAIN_FILE = 'train_5120.tfrecords'
 # VALIDATION_FILE = 'train_5120.tfrecords'
 # NUM_VAL_SAMPLES = 5120
@@ -113,7 +114,7 @@ def inputs(train, batch_size, num_epochs):
     # (Internally uses a RandomShuffleQueue.)
     # We run this in two threads to avoid being a bottleneck.
     images, sparse_labels = tf.train.shuffle_batch(
-        [image, label], batch_size=batch_size, num_threads=2,
+        [image, label], batch_size=batch_size, num_threads=10,
         capacity=100000 + 3 * batch_size,
         # Ensures a minimum amount of shuffling of examples.
         min_after_dequeue=100000)
@@ -128,7 +129,7 @@ def eval_inputs(batch_size=VAL_BATCH_SIZE, file=VALIDATION_FILE):
     # queue.
     image, label = read_and_decode(filename_queue)
     images, sparse_labels = tf.train.batch(
-        [image, label], batch_size=batch_size, num_threads=2)
+        [image, label], batch_size=batch_size, num_threads=10, capacity=10000 + 3 * batch_size)
     return images, sparse_labels
 def update_lrs(lrs, epochs_loss, epochs_fac):
   print(np.abs(epochs_loss[-1] - epochs_loss[-2]))
@@ -183,8 +184,8 @@ def run_training():
       iter = 0
       train_batches = int(NUM_TRAIN_SAMPLES / FLAGS.batch_size)
       val_batches = int(NUM_VAL_SAMPLES / VAL_BATCH_SIZE)
-      # summary_writer.add_graph(sess.graph_def)
-      # tf.train.write_graph(sess.graph_def, './data_g/','graph.pbtxt')      
+      summary_writer.add_graph(sess.graph_def)
+      # tf.train.write_graph(sess.graph_def, './data/','graph.pbtxt')       
       while not coord.should_stop():
         start_time = time.time()
         # Run one step of the model.  The return values are
@@ -193,16 +194,30 @@ def run_training():
         # of your ops or variables, you may include them in
         # the list passed to sess.run() and the value tensors
         # will be returned in the tuple from the call.
-        _, loss_value, fac_value = sess.run([train_op, loss, evaluation],
-                feed_dict={lr: lrs[-1]})
+        # _, loss_value, fac_value = sess.run([train_op, loss, evaluation],
+        _= sess.run([train_op],
+        feed_dict={lr: lrs[-1]})
         duration = time.time() - start_time
+        # print("TrainOp %.4f" %(duration))
+        start_time = time.time()
+        sess.run([loss])
+        durationLoss = time.time() - start_time
+        # print("Loss %.4f" %(duration))
+        start_time = time.time()        
+        sess.run([logits])
+        durationLogits = time.time() - start_time
+        # print("Logits %.4f" %(duration))
         # Print an overview fairly often.
         if step % 100 == 0:
+          loss_value, fac_value = sess.run([loss, evaluation])
+          print("Logits %.4f" %(durationLogits))
+          print("Loss %.4f" %(durationLoss))
+        
           summary_str = sess.run([summary_op, loss])
           summary_writer.add_summary(summary_str[0], step)          
           print('Step %d: loss = %.2f (%.3f sec), fac = %.2f' % 
               (step, loss_value, duration, fac_value / FLAGS.batch_size))
-        if step % int(NUM_TRAIN_SAMPLES / FLAGS.batch_size) == 0:
+        if step % int(NUM_TRAIN_SAMPLES / FLAGS.batch_size) == 10000:
           saver.save(sess, FLAGS.train_dir + '/model', global_step=step)
           it_loss = it_fac = 0
           print('Validating...')

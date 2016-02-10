@@ -66,7 +66,7 @@ def inference(images, hidden1_units, hidden2_units, hidden3_units):
                          name='biases')
     hidden1 = tf.nn.relu(tf.matmul(images, weights) + biases)
     # hidden1 = tf.sigmoid(tf.matmul(images, weights) + biases)
-    weights_summ_h1=tf.histogram_summary("h1", weights)
+    # weights_summ_h1=tf.histogram_summary("h1", weights)
 
   # Hidden 2
   with tf.name_scope('hidden2'):

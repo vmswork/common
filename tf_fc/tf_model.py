@@ -57,8 +57,8 @@ def max_pool_2x2(x):
   return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                         strides=[1, 2, 2, 1], padding='VALID')
 def max_pool_2x1(x):
-  return tf.nn.max_pool(x, ksize=[1, 1, 2, 1],
-                        strides=[1, 1, 2, 1], padding='VALID')
+  return tf.nn.max_pool(x, ksize=[1, 2, 1, 1],
+                        strides=[1, 2, 1, 1], padding='VALID')
 
 def inference(images, hidden1_units, hidden2_units, hidden3_units):
   """Build the MNIST model up to where it may be used for inference.
@@ -71,32 +71,32 @@ def inference(images, hidden1_units, hidden2_units, hidden3_units):
   Returns:
     softmax_linear: Output tensor with the computed logits.
   """
-  x_image = tf.reshape(images, [-1,11,40,1])
+  # x_image = tf.reshape(images, [-1,40,11,1])
   # conv1
-  with tf.variable_scope("conv"):
-    W_conv1 = weight_variable([11, 5, 1, 180])
-    b_conv1 = bias_variable([180])
+  # with tf.variable_scope("conv"):
+  #  W_conv1 = weight_variable([5, 11, 1, 180])
+  #  b_conv1 = bias_variable([180])
     
-    h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
-    h_pool1 = max_pool_2x1(h_conv1)
+  #  h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+  #  h_pool1 = max_pool_2x1(h_conv1)
     
-    W_conv2 = weight_variable([1, 5, 180, 180])
-    b_conv2 = bias_variable([180])
+  #  W_conv2 = weight_variable([5, 1, 180, 180])
+  #  b_conv2 = bias_variable([180])
 
-    h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
-    h_pool2 = max_pool_2x1(h_conv2)
+  #  h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+  #  h_pool2 = max_pool_2x1(h_conv2)
 
   # Hidden 1
   with tf.variable_scope("hidden1", reuse=True):
-    h1_input_size = 7 * 1 * 180
-    h_pool2_flat = tf.reshape(h_pool2, [-1, h1_input_size])
+    # h1_input_size = 7 * 1 * 180
+    # h_pool2_flat = tf.reshape(h_pool2, [-1, h1_input_size])
     weights = tf.Variable(
-        tf.truncated_normal([h1_input_size, hidden1_units],
-                            stddev=1.0 / math.sqrt(float(h1_input_size))),
+        tf.truncated_normal([IMAGE_PIXELS, hidden1_units],
+                            stddev=1.0 / math.sqrt(float(IMAGE_PIXELS))),
         name='weights')
     biases = tf.Variable(tf.zeros([hidden1_units]),
                          name='biases')
-    hidden1 = tf.nn.relu(tf.matmul(h_pool2_flat, weights) + biases)
+    hidden1 = tf.nn.relu(tf.matmul(images, weights) + biases)
     weights_summ_h1=tf.histogram_summary("h1", weights)
 
   # Hidden 2
