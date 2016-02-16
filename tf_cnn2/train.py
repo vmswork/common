@@ -67,17 +67,17 @@ VAL_BATCH_SIZE = 256
 def read_and_decode(filename_queue):
   reader = tf.TFRecordReader()
   _, serialized_example = reader.read(filename_queue)
-  # features = tf.parse_single_example(
-  # serialized_example,
-  # Defaults are not specified since both keys are required.
-  # features={
-  # 'vector': tf.FixedLenFeature([], tf.string),
-  # 'label': tf.FixedLenFeature([], tf.int64),
-  # })  
+  features = tf.parse_single_example(
+    serialized_example,
+    # Defaults are not specified since both keys are required.
+    features={
+      'vector': tf.FixedLenFeature([], tf.string),
+      'label': tf.FixedLenFeature([], tf.int64),
+    })  
   
   
   
-  features = tf.parse_single_example(serialized_example, dense_keys=['vector', 'label'], dense_types=[tf.string, tf.int64])
+  # features = tf.parse_single_example(serialized_example, dense_keys=['vector', 'label'], dense_types=[tf.string, tf.int64])
   # Convert from a scalar string tensor (whose single string has
   # length tf_model.IMAGE_PIXELS) to a uint8 tensor with shape
   # [tf_model.IMAGE_PIXELS].
