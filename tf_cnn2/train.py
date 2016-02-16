@@ -36,23 +36,23 @@ FLAGS = flags.FLAGS
 if len(FLAGS.__flags) == 0:
   flags.DEFINE_float('learning_rate', 0.08, 'Initial learning rate.')
   flags.DEFINE_integer('num_epochs', 25, 'Number of epochs to run trainer.')
-  flags.DEFINE_integer('hidden1', 1000, 'Number of units in hidden layer 1.')
-  flags.DEFINE_integer('hidden2', 1000, 'Number of units in hidden layer 2.')
-  flags.DEFINE_integer('hidden3', 1000, 'Number of units in hidden layer 3.')
+  flags.DEFINE_integer('hidden1', 2048, 'Number of units in hidden layer 1.')
+  flags.DEFINE_integer('hidden2', 2048, 'Number of units in hidden layer 2.')
+  flags.DEFINE_integer('hidden3', 2048, 'Number of units in hidden layer 3.')
   flags.DEFINE_integer('batch_size', 1024, 'Batch size.')
   flags.DEFINE_string('train_dir', '.',
                         'Directory with the training data.')
-  flags.DEFINE_string('gpu', '1',
+  flags.DEFINE_string('gpu', '0',
                         'GPU id.')                        
                         
 os.environ['CUDA_VISIBLE_DEVICES'] = FLAGS.gpu
                         
 # Constants used for dealing with the files, matches convert_to_records.
 TRAIN_FILE = 'train_6457344.tfrecords'
-VALIDATION_FILE = 'dev_498688.tfrecords'
+# VALIDATION_FILE = 'dev_498688.tfrecords'
 VALIDATION_FILE = 'dev_2012928.tfrecords'
-FEATURE_DIMENSIONALITY = 440
-NUM_VAL_SAMPLES = 498688
+FEATURE_DIMENSIONALITY = 1320
+# NUM_VAL_SAMPLES = 498688
 NUM_VAL_SAMPLES = 2012928
 NUM_TRAIN_SAMPLES = 6457344
 VAL_BATCH_SIZE = 256
@@ -67,21 +67,17 @@ VAL_BATCH_SIZE = 256
 def read_and_decode(filename_queue):
   reader = tf.TFRecordReader()
   _, serialized_example = reader.read(filename_queue)
-  features = tf.parse_single_example(
-  serialized_example,
-  # Defaults are not specified since both keys are required.
-  features={
-  'vector': tf.FixedLenFeature([], tf.string),
-  'label': tf.FixedLenFeature([], tf.int64),
-  })  
-  
-  
-  
   # features = tf.parse_single_example(
-  #  serialized_example,
-  #  dense_keys=['vector', 'label'],
-    # Defaults are not specified since both keys are required.
-  #  dense_types=[tf.string, tf.int64])
+  # serialized_example,
+  # Defaults are not specified since both keys are required.
+  # features={
+  # 'vector': tf.FixedLenFeature([], tf.string),
+  # 'label': tf.FixedLenFeature([], tf.int64),
+  # })  
+  
+  
+  
+  features = tf.parse_single_example(serialized_example, dense_keys=['vector', 'label'], dense_types=[tf.string, tf.int64])
   # Convert from a scalar string tensor (whose single string has
   # length tf_model.IMAGE_PIXELS) to a uint8 tensor with shape
   # [tf_model.IMAGE_PIXELS].
@@ -215,7 +211,7 @@ def run_training():
           print('Step %d: loss = %.2f (%.3f sec), fac = %.2f' % 
               (step, loss_value, duration, fac_value / FLAGS.batch_size))
         if step % int(NUM_TRAIN_SAMPLES / FLAGS.batch_size) == 0:
-          saver.save(sess, FLAGS.train_dir + '/cnnmodel2', global_step=step)
+          saver.save(sess, FLAGS.train_dir + '/cnnmodel', global_step=step)
           it_loss = it_fac = 0
           print('Validating...')
           for i in range(val_batches):
@@ -232,7 +228,8 @@ def run_training():
           print('Iter %d: cv_loss = %.2f, cv_fac = %.2f' % (iter, epoch_loss, epoch_fac ))
           update_lrs(lrs, epochs_loss, epochs_fac)
           iter += 1
-            
+          print(epochs_loss)
+          print(lrs)
         
         step += 1
        

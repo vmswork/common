@@ -40,7 +40,7 @@ NUM_CLASSES = 1956
 
 # The MNIST images are always 28x28 pixels.
 IMAGE_SIZE = 28
-IMAGE_PIXELS = 440
+IMAGE_PIXELS = 1320
 
 
 def weight_variable(shape):
@@ -71,10 +71,12 @@ def inference(images, hidden1_units, hidden2_units, hidden3_units):
   Returns:
     softmax_linear: Output tensor with the computed logits.
   """
-  x_image = tf.reshape(images, [-1,11,40,1])
+  # x_image = tf.reshape(images, [-1,11,40,1])
+  x_image = tf.reshape(images, [-1,11,3,40])
+
   # conv1
   with tf.variable_scope("conv"):
-    W_conv1 = weight_variable([11, 5, 1, 180])
+    W_conv1 = weight_variable([11, 1, 5, 180])
     b_conv1 = bias_variable([180])
     
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
