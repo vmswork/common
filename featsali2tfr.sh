@@ -10,6 +10,8 @@ setname=$4
 # sudo unlink /usr/local/cuda
 # sudo ln -s /usr/local/cuda-7.5 /usr/local/cuda
 local/common/apply_splice_cmvn_g.sh $data $nnet
+
+
 # sudo unlink /usr/local/cuda
 # sudo ln -s /usr/local/cuda-7.0 /usr/local/cuda
 
